@@ -1,0 +1,25 @@
+<!-- canvas/canvas.component.html -->
+<!-- canvas/canvas.component.html -->
+<div #canvasWrapper class="canvas-wrapper">
+  <canvas
+    #canvas
+    (mousedown)="onMouseDown($event)"
+    (mousemove)="onMouseMove($event)"
+    (mouseup)="onMouseUp()"
+    (mouseleave)="onMouseLeave()"
+    (wheel)="onWheel($event)"
+    (dblclick)="onDoubleClick($event)"
+    [attr.width]="canvasWidth"
+    [attr.height]="canvasHeight"
+    [style.cursor]="cursorStyle">
+  </canvas>
+</div>
+
+<div class="controls">
+  <button (click)="canvasService.spawnMode = true" [class.active]="canvasService.spawnMode">Spawn Mode</button>
+  <button (click)="canvasService.spawnMode = false" [class.active]="!canvasService.spawnMode">Pan/Select Mode</button>
+  <p *ngIf="spawnMode">Click to spawn rectangles</p>
+  <p *ngIf="!spawnMode">
+    • Hold SPACE + drag to pan<br>• Click rectangles to select<br>• Drag white handles to resize
+  </p>
+</div>

@@ -1,13 +1,13 @@
 import {Component, signal} from '@angular/core';
-import {RectanglesComponent} from './components/canvas/canvas.component';
+import {CanvasComponent} from './components/canvas/canvas.component';
 
 @Component({
   selector: 'app-root',
   imports: [
-    RectanglesComponent
+    CanvasComponent
   ],
   template: `
-    <app-rectangles></app-rectangles>
+    <app-canvas></app-canvas>
   `
 })
 export class App {
