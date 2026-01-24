@@ -1,17 +1,17 @@
 // canvas/canvas.component.ts
-import {Component, ViewChild, ElementRef, AfterViewInit, HostListener} from '@angular/core';
-import {Rectangle} from '../rectangle/rectangle.model';
-import {CanvasService} from '../../services/canvas.service';
-import {TextEditorService} from '../../services/text-editor.service';
+import { Component, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
+import { Rectangle } from '../rectangle/rectangle.model';
+import { CanvasService } from '../../services/canvas.service';
+import { TextEditorService } from '../../services/text-editor.service';
 
 @Component({
   selector: 'app-canvas',
   templateUrl: './canvas.component.html',
-  styleUrls: ['./canvas.component.scss']
+  styleUrls: ['./canvas.component.scss'],
 })
 export class CanvasComponent implements AfterViewInit {
-  @ViewChild('canvas', {static: true}) canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('canvasWrapper', {static: true}) wrapperRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('canvasWrapper', { static: true }) wrapperRef!: ElementRef<HTMLDivElement>;
 
   canvasWidth = window.innerWidth;
   canvasHeight = window.innerHeight;
@@ -27,9 +27,8 @@ export class CanvasComponent implements AfterViewInit {
 
   constructor(
     public canvasService: CanvasService,
-    public textEditor: TextEditorService
-  ) {
-  }
+    public textEditor: TextEditorService,
+  ) {}
 
   ngAfterViewInit() {
     const canvas = this.canvasRef.nativeElement;
@@ -123,11 +122,7 @@ export class CanvasComponent implements AfterViewInit {
   // ===== PRIVATE HELPERS =====
   private getWorldPos(event: MouseEvent) {
     const canvasRect = this.canvasService.getCanvasRect();
-    return this.canvasService.screenToWorld(
-      event.clientX,
-      event.clientY,
-      canvasRect
-    );
+    return this.canvasService.screenToWorld(event.clientX, event.clientY, canvasRect);
   }
 
   private startPanning(event: MouseEvent) {
@@ -152,7 +147,7 @@ export class CanvasComponent implements AfterViewInit {
       if (rect.selected) {
         const handleType = this.getHandleAt(world.x, world.y, rect);
         if (handleType) {
-          this.currentHandle = {type: handleType, rect};
+          this.currentHandle = { type: handleType, rect };
           this.isDragging = true;
           this.cursorStyle = this.getResizeCursor(handleType);
           return true;
@@ -170,7 +165,7 @@ export class CanvasComponent implements AfterViewInit {
       this.currentHandle.rect,
       this.currentHandle.type,
       world.x,
-      world.y
+      world.y,
     );
     this.canvasService.draw();
   }
@@ -178,7 +173,7 @@ export class CanvasComponent implements AfterViewInit {
   private selectRectangleOrDeselect(x: number, y: number) {
     const clickedRect = this.getRectAt(x, y);
 
-    this.canvasService.rectangles.forEach(r => r.selected = false);
+    this.canvasService.rectangles.forEach((r) => (r.selected = false));
 
     if (clickedRect) {
       clickedRect.selected = true;
@@ -211,7 +206,7 @@ export class CanvasComponent implements AfterViewInit {
         rect.text = newText;
         this.isEditingText = false;
         this.canvasService.draw();
-      }
+      },
     );
   }
 
@@ -238,15 +233,19 @@ export class CanvasComponent implements AfterViewInit {
   private getHandleAt(x: number, y: number, rect: Rectangle): string | null {
     const hs = 8;
     const corners = [
-      {type: 'nw', x: rect.x, y: rect.y},
-      {type: 'ne', x: rect.x + rect.width, y: rect.y},
-      {type: 'sw', x: rect.x, y: rect.y + rect.height},
-      {type: 'se', x: rect.x + rect.width, y: rect.y + rect.height}
+      { type: 'nw', x: rect.x, y: rect.y },
+      { type: 'ne', x: rect.x + rect.width, y: rect.y },
+      { type: 'sw', x: rect.x, y: rect.y + rect.height },
+      { type: 'se', x: rect.x + rect.width, y: rect.y + rect.height },
     ];
 
     for (const corner of corners) {
-      if (x >= corner.x - hs / 2 && x <= corner.x + hs / 2 &&
-        y >= corner.y - hs / 2 && y <= corner.y + hs / 2) {
+      if (
+        x >= corner.x - hs / 2 &&
+        x <= corner.x + hs / 2 &&
+        y >= corner.y - hs / 2 &&
+        y <= corner.y + hs / 2
+      ) {
         return corner.type;
       }
     }
@@ -255,8 +254,10 @@ export class CanvasComponent implements AfterViewInit {
 
   private getResizeCursor(handleType: string): string {
     const cursors: Record<string, string> = {
-      'nw': 'nw-resize', 'ne': 'ne-resize',
-      'sw': 'sw-resize', 'se': 'se-resize'
+      nw: 'nw-resize',
+      ne: 'ne-resize',
+      sw: 'sw-resize',
+      se: 'se-resize',
     };
     return cursors[handleType] || 'default';
   }

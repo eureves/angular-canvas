@@ -1,8 +1,8 @@
-import {Injectable} from '@angular/core';
-import {Rectangle} from '../components/rectangle/rectangle.model';
-import {RectangleManager} from './rectangle-manager.service';
+import { Injectable } from '@angular/core';
+import { Rectangle } from '../components/rectangle/rectangle.model';
+import { RectangleManager } from './rectangle-manager.service';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class CanvasService {
   rectangles: Rectangle[] = [];
   offsetX = 0;
@@ -12,8 +12,7 @@ export class CanvasService {
   private ctx!: CanvasRenderingContext2D;
   private canvas!: HTMLCanvasElement;
 
-  constructor(private rectManager: RectangleManager) {
-  }
+  constructor(private rectManager: RectangleManager) {}
 
   init(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
@@ -28,9 +27,7 @@ export class CanvasService {
 
     // this.drawGrid();
 
-    this.rectangles.forEach(rect =>
-      this.rectManager.draw(rect, rect.selected)
-    );
+    this.rectangles.forEach((rect) => this.rectManager.draw(rect, rect.selected));
 
     this.ctx.restore();
   }
@@ -41,8 +38,8 @@ export class CanvasService {
 
   addDemoRectangles() {
     this.rectangles.push(
-      {x: 100, y: 100, width: 120, height: 80, color: '#4CAF50', selected: false, text: 'Hello'},
-      {x: 300, y: 200, width: 100, height: 100, color: '#2196F3', selected: false, text: 'World'}
+      { x: 100, y: 100, width: 120, height: 80, color: '#4CAF50', selected: false, text: 'Hello' },
+      { x: 300, y: 200, width: 100, height: 100, color: '#2196F3', selected: false, text: 'World' },
     );
   }
 
@@ -53,7 +50,7 @@ export class CanvasService {
   screenToWorld(clientX: number, clientY: number, canvasRect: DOMRect) {
     return {
       x: clientX - canvasRect.left - this.offsetX,
-      y: clientY - canvasRect.top - this.offsetY
+      y: clientY - canvasRect.top - this.offsetY,
     };
   }
 

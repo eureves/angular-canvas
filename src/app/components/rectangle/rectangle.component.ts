@@ -1,9 +1,9 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Rectangle} from './rectangle.model';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Rectangle } from './rectangle.model';
 
 @Component({
   selector: 'app-rectangle',
-  template: ''
+  template: '',
 })
 export class RectangleComponent {
   @Input() rect!: Rectangle;
@@ -12,7 +12,7 @@ export class RectangleComponent {
     rect: Rectangle;
     handle: string;
     worldX: number;
-    worldY: number
+    worldY: number;
   }>();
   @Output() spawn = new EventEmitter<{ x: number; y: number }>();
 
@@ -26,12 +26,16 @@ export class RectangleComponent {
       { type: 'nw', x: this.rect.x, y: this.rect.y },
       { type: 'ne', x: this.rect.x + this.rect.width, y: this.rect.y },
       { type: 'sw', x: this.rect.x, y: this.rect.y + this.rect.height },
-      { type: 'se', x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height }
+      { type: 'se', x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height },
     ];
 
     for (const corner of corners) {
-      if (worldX >= corner.x - hs/2 && worldX <= corner.x + hs/2 &&
-        worldY >= corner.y - hs/2 && worldY <= corner.y + hs/2) {
+      if (
+        worldX >= corner.x - hs / 2 &&
+        worldX <= corner.x + hs / 2 &&
+        worldY >= corner.y - hs / 2 &&
+        worldY <= corner.y + hs / 2
+      ) {
         return corner.type;
       }
     }
@@ -40,8 +44,10 @@ export class RectangleComponent {
 
   getResizeCursor(handleType: string): string {
     const cursors: Record<string, string> = {
-      'nw': 'nw-resize', 'ne': 'ne-resize',
-      'sw': 'sw-resize', 'se': 'se-resize'
+      nw: 'nw-resize',
+      ne: 'ne-resize',
+      sw: 'sw-resize',
+      se: 'se-resize',
     };
     return cursors[handleType] || 'default';
   }
@@ -50,7 +56,7 @@ export class RectangleComponent {
     const minWidth = 20;
     const minHeight = 20;
 
-    switch(handleType) {
+    switch (handleType) {
       case 'se':
         this.rect.width = Math.max(minWidth, worldX - this.rect.x);
         this.rect.height = Math.max(minHeight, worldY - this.rect.y);
@@ -96,7 +102,7 @@ export class RectangleComponent {
     while (
       (ctx.measureText(this.rect.text).width > maxWidth || fontSize > maxHeight) &&
       fontSize > this.MIN_FONT_SIZE
-      ) {
+    ) {
       fontSize--;
       ctx.font = `${fontSize}px Arial`;
     }
@@ -145,16 +151,16 @@ export class RectangleComponent {
       { x: this.rect.x, y: this.rect.y },
       { x: this.rect.x + this.rect.width, y: this.rect.y },
       { x: this.rect.x, y: this.rect.y + this.rect.height },
-      { x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height }
+      { x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height },
     ];
 
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1;
 
-    corners.forEach(corner => {
-      ctx.fillRect(corner.x - hs/2, corner.y - hs/2, hs, hs);
-      ctx.strokeRect(corner.x - hs/2, corner.y - hs/2, hs, hs);
+    corners.forEach((corner) => {
+      ctx.fillRect(corner.x - hs / 2, corner.y - hs / 2, hs, hs);
+      ctx.strokeRect(corner.x - hs / 2, corner.y - hs / 2, hs, hs);
     });
   }
 }

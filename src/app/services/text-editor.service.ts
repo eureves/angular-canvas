@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class TextEditorService {
   private input!: HTMLInputElement;
   private onSave!: (text: string) => void;
@@ -13,7 +13,7 @@ export class TextEditorService {
       position: 'absolute',
       zIndex: '100',
       opacity: '0',
-      pointerEvents: 'none'
+      pointerEvents: 'none',
     });
 
     this.input.addEventListener('keydown', (e) => {
@@ -24,7 +24,14 @@ export class TextEditorService {
     document.body.appendChild(this.input);
   }
 
-  startEdit(text: string, x: number, y: number, width: number, height: number, onSave: (text: string) => void) {
+  startEdit(
+    text: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    onSave: (text: string) => void,
+  ) {
     this.onSave = onSave;
     this.input.value = text;
     Object.assign(this.input.style, {
@@ -33,7 +40,7 @@ export class TextEditorService {
       width: `${width - 8}px`,
       height: `${height - 8}px`,
       opacity: '1',
-      pointerEvents: 'auto'
+      pointerEvents: 'auto',
     });
     this.input.focus();
     this.input.select();

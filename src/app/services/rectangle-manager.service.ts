@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {Rectangle} from '../components/rectangle/rectangle.model';
+import { Injectable } from '@angular/core';
+import { Rectangle } from '../components/rectangle/rectangle.model';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class RectangleManager {
   private ctx!: CanvasRenderingContext2D;
   private readonly HANDLE_SIZE = 8;
@@ -19,7 +19,7 @@ export class RectangleManager {
     const color = `hsl(${hue}, 70%, 60%)`;
     const texts = ['New', 'Item', 'Box', 'Text', 'Rect'];
     const text = texts[Math.floor(Math.random() * texts.length)];
-    return {x, y, width, height, color, selected: false, text};
+    return { x, y, width, height, color, selected: false, text };
   }
 
   draw(rect: Rectangle, isSelected: boolean) {
@@ -94,7 +94,7 @@ export class RectangleManager {
     while (
       (this.ctx.measureText(rect.text).width > maxWidth || fontSize > maxHeight) &&
       fontSize > this.MIN_FONT_SIZE
-      ) {
+    ) {
       fontSize--;
       this.ctx.font = `${fontSize}px Arial`;
     }
@@ -112,17 +112,17 @@ export class RectangleManager {
   private drawResizeHandles(rect: Rectangle) {
     const hs = this.HANDLE_SIZE;
     const corners = [
-      {x: rect.x, y: rect.y},
-      {x: rect.x + rect.width, y: rect.y},
-      {x: rect.x, y: rect.y + rect.height},
-      {x: rect.x + rect.width, y: rect.y + rect.height}
+      { x: rect.x, y: rect.y },
+      { x: rect.x + rect.width, y: rect.y },
+      { x: rect.x, y: rect.y + rect.height },
+      { x: rect.x + rect.width, y: rect.y + rect.height },
     ];
 
     this.ctx.fillStyle = '#FFFFFF';
     this.ctx.strokeStyle = '#000';
     this.ctx.lineWidth = 1;
 
-    corners.forEach(corner => {
+    corners.forEach((corner) => {
       this.ctx.fillRect(corner.x - hs / 2, corner.y - hs / 2, hs, hs);
       this.ctx.strokeRect(corner.x - hs / 2, corner.y - hs / 2, hs, hs);
     });
