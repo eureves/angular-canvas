@@ -1,11 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {Component, signal} from '@angular/core';
+import {RectanglesComponent} from './components/canvas/canvas.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  imports: [
+    RectanglesComponent
+  ],
+  template: `
+    <app-rectangles></app-rectangles>
+  `
 })
 export class App {
   protected readonly title = signal('canvas');
