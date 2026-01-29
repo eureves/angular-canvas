@@ -16,19 +16,29 @@ export class RectangleManager {
     const width = Math.floor(Math.random() * 80) + 40;
     const height = Math.floor(Math.random() * 80) + 40;
     const hue = Math.floor(Math.random() * 360);
-    const color = `hsl(${hue}, 70%, 60%)`;
+    const color = `hsl(${hue}, 0%, 95%)`;
     const texts = ['New', 'Item', 'Box', 'Text', 'Rect'];
     const text = texts[Math.floor(Math.random() * texts.length)];
     return { x, y, width, height, color, selected: false, text };
   }
 
   draw(rect: Rectangle, isSelected: boolean) {
+    const radius = 8;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(rect.x + radius, rect.y);
+    this.ctx.arcTo(rect.x + rect.width, rect.y, rect.x + rect.width, rect.y + rect.height, radius);
+    this.ctx.arcTo(rect.x + rect.width, rect.y + rect.height, rect.x, rect.y + rect.height, radius);
+    this.ctx.arcTo(rect.x, rect.y + rect.height, rect.x, rect.y, radius);
+    this.ctx.arcTo(rect.x, rect.y, rect.x + rect.width, rect.y, radius);
+    this.ctx.closePath();
+
     this.ctx.fillStyle = rect.color;
-    this.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    this.ctx.fill();
 
     this.ctx.strokeStyle = isSelected ? '#FF5722' : '#000';
     this.ctx.lineWidth = isSelected ? 2 : 1;
-    this.ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    this.ctx.stroke();
 
     if (rect.text) {
       const fontSize = this.getFontSize(rect);
@@ -36,7 +46,11 @@ export class RectangleManager {
       this.ctx.fillStyle = this.getTextColor(rect.color);
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(rect.text, rect.x + rect.width / 2, rect.y + rect.height / 2);
+      this.ctx.fillText(
+        rect.text,
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2
+      );
     }
 
     if (isSelected) this.drawResizeHandles(rect);

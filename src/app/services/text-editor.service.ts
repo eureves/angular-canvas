@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class TextEditorService {
@@ -9,6 +9,7 @@ export class TextEditorService {
     if (this.input) return;
 
     this.input = document.createElement('input');
+
     Object.assign(this.input.style, {
       position: 'absolute',
       zIndex: '100',
@@ -34,6 +35,7 @@ export class TextEditorService {
   ) {
     this.onSave = onSave;
     this.input.value = text;
+
     Object.assign(this.input.style, {
       left: `${x + 4}px`,
       top: `${y + 4}px`,
@@ -42,12 +44,14 @@ export class TextEditorService {
       opacity: '1',
       pointerEvents: 'auto',
     });
+
     this.input.focus();
     this.input.select();
   }
 
   private save() {
     this.onSave?.(this.input.value);
+
     this.input.style.opacity = '0';
     this.input.style.pointerEvents = 'none';
   }

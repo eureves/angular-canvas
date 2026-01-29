@@ -25,8 +25,6 @@ export class CanvasService {
     this.ctx.save();
     this.ctx.translate(this.offsetX, this.offsetY);
 
-    // this.drawGrid();
-
     this.rectangles.forEach((rect) => this.rectManager.draw(rect, rect.selected));
 
     this.ctx.restore();

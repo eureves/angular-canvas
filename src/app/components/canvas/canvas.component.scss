@@ -1,0 +1,41 @@
+:host {
+  overflow: hidden;
+}
+
+.canvas {
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto;
+
+  padding: 1rem;
+  border-radius: 1rem;
+  background: linen;
+
+  button {
+    width: 4rem;
+    height: 4rem;
+
+    background: white;
+    border-radius: 1rem;
+    border: 1ps solid black;
+    cursor: pointer;
+  }
+
+  &__wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    margin-bottom: 1rem;
+  }
+}

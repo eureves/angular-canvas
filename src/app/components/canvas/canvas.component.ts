@@ -1,8 +1,7 @@
-// canvas/canvas.component.ts
-import { Component, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
-import { Rectangle } from '../rectangle/rectangle.model';
-import { CanvasService } from '../../services/canvas.service';
-import { TextEditorService } from '../../services/text-editor.service';
+import {AfterViewInit, Component, ElementRef, HostListener, ViewChild} from '@angular/core';
+import {Rectangle} from '../rectangle/rectangle.model';
+import {CanvasService} from '../../services/canvas.service';
+import {TextEditorService} from '../../services/text-editor.service';
 
 @Component({
   selector: 'app-canvas',
@@ -17,7 +16,6 @@ export class CanvasComponent implements AfterViewInit {
   canvasHeight = window.innerHeight;
   cursorStyle = 'default';
 
-  // Interaction state
   private isPanning = false;
   private lastPanX = 0;
   private lastPanY = 0;
@@ -45,7 +43,10 @@ export class CanvasComponent implements AfterViewInit {
   @HostListener('window:resize')
   onResize() {
     this.updateCanvasSize();
-    this.canvasService.draw();
+
+    setTimeout(() => {
+      this.canvasService.draw();
+    })
   }
 
   private updateCanvasSize() {
@@ -53,7 +54,6 @@ export class CanvasComponent implements AfterViewInit {
     this.canvasHeight = window.innerHeight;
   }
 
-  // ===== EVENT HANDLERS =====
   onMouseDown(event: MouseEvent) {
     if (event.buttons === 1 && event.altKey) {
       this.startPanning(event);
@@ -67,12 +67,10 @@ export class CanvasComponent implements AfterViewInit {
       return;
     }
 
-    // Check for resize handle click
     if (this.checkResizeHandleClick(world)) {
       return;
     }
 
-    // Select rectangle or deselect
     this.selectRectangleOrDeselect(world.x, world.y);
   }
 
@@ -114,12 +112,12 @@ export class CanvasComponent implements AfterViewInit {
 
     const world = this.getWorldPos(event);
     const rect = this.getRectAt(world.x, world.y);
+
     if (rect) {
       this.startTextEditing(rect);
     }
   }
 
-  // ===== PRIVATE HELPERS =====
   private getWorldPos(event: MouseEvent) {
     const canvasRect = this.canvasService.getCanvasRect();
     return this.canvasService.screenToWorld(event.clientX, event.clientY, canvasRect);
@@ -194,6 +192,7 @@ export class CanvasComponent implements AfterViewInit {
 
   private startTextEditing(rect: Rectangle) {
     this.isEditingText = true;
+
     const canvasRect = this.canvasService.getCanvasRect();
 
     this.textEditor.startEdit(
@@ -210,12 +209,10 @@ export class CanvasComponent implements AfterViewInit {
     );
   }
 
-  // 👇 ADDED MISSING METHOD
   private updateCursor(event: MouseEvent) {
     const world = this.getWorldPos(event);
     let cursor = 'default';
 
-    // Check for resize handles on selected rectangles
     for (const rect of this.canvasService.rectangles) {
       if (rect.selected) {
         const handle = this.getHandleAt(world.x, world.y, rect);
@@ -229,7 +226,6 @@ export class CanvasComponent implements AfterViewInit {
     this.cursorStyle = cursor;
   }
 
-  // Handle detection helpers
   private getHandleAt(x: number, y: number, rect: Rectangle): string | null {
     const hs = 8;
     const corners = [
