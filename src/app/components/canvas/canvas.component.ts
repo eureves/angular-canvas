@@ -20,11 +20,14 @@ export class CanvasComponent implements AfterViewInit {
 
   connectionMode = false;
 
+  private isDraggingRect = false;
+  private dragOffsetX = 0;
+  private dragOffsetY = 0;
+
   private isConnecting = false;
   private connectionStartRect: Rectangle | null = null;
   private tempConnection: { from: Point; to: Point } | null = null;
-  private potentialTarget: Rectangle | null = null; // Track hover target
-
+  private potentialTarget: Rectangle | null = null;
 
   private isPanning = false;
   private lastPanX = 0;
@@ -53,7 +56,6 @@ export class CanvasComponent implements AfterViewInit {
 
     const { from, to } = this.tempConnection;
 
-    // Draw connection line
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const cx1 = from.x + dx * 0.3;
@@ -65,7 +67,6 @@ export class CanvasComponent implements AfterViewInit {
     ctx.moveTo(from.x, from.y);
     ctx.bezierCurveTo(cx1, cy1, cx2, cy2, to.x, to.y);
 
-    // Change color if hovering over valid target
     const strokeColor = this.potentialTarget ? '#4CAF50' : '#FF5722';
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = 2;
@@ -73,7 +74,6 @@ export class CanvasComponent implements AfterViewInit {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Highlight target rectangle if valid
     if (this.potentialTarget) {
       ctx.strokeStyle = '#4CAF50';
       ctx.lineWidth = 2;
@@ -125,7 +125,6 @@ export class CanvasComponent implements AfterViewInit {
     if (this.connectionMode) {
       const clickedRect = this.getRectAt(world.x, world.y);
       if (clickedRect) {
-        // Start connection from this rectangle
         this.isConnecting = true;
         this.connectionStartRect = clickedRect;
         this.tempConnection = {
@@ -136,7 +135,6 @@ export class CanvasComponent implements AfterViewInit {
           to: {x: world.x, y: world.y}
         };
 
-        // Draw initial preview
         this.canvasService.draw();
         this.drawTempConnection();
       }
@@ -149,7 +147,6 @@ export class CanvasComponent implements AfterViewInit {
 
       if (clickedRect) {
         if (!this.connectionStartRect) {
-          // Start connection
           this.connectionStartRect = clickedRect;
           this.tempConnection = {
             from: {
@@ -159,18 +156,16 @@ export class CanvasComponent implements AfterViewInit {
             to: {x: world.x, y: world.y}
           };
           this.canvasService.draw();
-          this.drawTempConnection(); // Show initial connection
+          this.drawTempConnection();
         } else if (this.connectionStartRect.id !== clickedRect.id) {
-          // Complete connection
           this.canvasService.createConnector(
             this.connectionStartRect.id,
             clickedRect.id
           );
           this.resetConnectionState();
-          this.canvasService.draw(); // 👈 Persist the new connector
+          this.canvasService.draw();
         }
       } else {
-        // Clicked empty space - cancel
         this.resetConnectionState();
         this.canvasService.draw();
       }
@@ -183,9 +178,34 @@ export class CanvasComponent implements AfterViewInit {
       return;
     }
 
-    if (this.checkResizeHandleClick(world)) {
-      return;
+    const selectedRect = this.canvasService.rectangles.find(r => r.selected);
+
+    if (selectedRect) {
+      const clickedInside = (
+        world.x >= selectedRect.x &&
+        world.x <= selectedRect.x + selectedRect.width &&
+        world.y >= selectedRect.y &&
+        world.y <= selectedRect.y + selectedRect.height
+      );
+
+      const handle = this.getHandleAt(world.x, world.y, selectedRect);
+
+      if (clickedInside && !handle) {
+        this.isDraggingRect = true;
+        this.dragOffsetX = world.x - selectedRect.x;
+        this.dragOffsetY = world.y - selectedRect.y;
+        return;
+      }
+
+      if (handle) {
+        this.currentHandle = { type: handle, rect: selectedRect };
+        this.isDragging = true;
+        this.cursorStyle = this.getResizeCursor(handle);
+        return;
+      }
     }
+
+    this.selectRectangleOrDeselect(world.x, world.y);
 
     this.selectRectangleOrDeselect(world.x, world.y);
   }
@@ -199,14 +219,21 @@ export class CanvasComponent implements AfterViewInit {
 
     const world = this.getWorldPos(event);
 
-    // 👇 UPDATE CONNECTION PREVIEW DURING DRAG
+    if (this.isDraggingRect) {
+      const selectedRect = this.canvasService.rectangles.find(r => r.selected);
+      if (selectedRect) {
+        selectedRect.x = world.x - this.dragOffsetX;
+        selectedRect.y = world.y - this.dragOffsetY;
+        this.canvasService.draw();
+      }
+      return;
+    }
+
     if (this.isConnecting) {
-      // Update drag position
       if (this.tempConnection) {
         this.tempConnection.to = { x: world.x, y: world.y };
       }
 
-      // Check if hovering over valid target
       this.potentialTarget = null;
       if (this.connectionStartRect) {
         const hoveredRect = this.getRectAt(world.x, world.y);
@@ -215,7 +242,6 @@ export class CanvasComponent implements AfterViewInit {
         }
       }
 
-      // Redraw with updated preview
       this.canvasService.draw();
       this.drawTempConnection();
       return;
@@ -224,6 +250,10 @@ export class CanvasComponent implements AfterViewInit {
     if (this.isPanning) {
       this.pan(event);
       return;
+    }
+
+    if (!this.canvasService.spawnMode && !this.isEditingText) {
+      this.updateCursor(event);
     }
 
     if (!this.canvasService.spawnMode && !this.isDragging && !this.isEditingText) {
@@ -236,23 +266,24 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   onMouseUp(event: MouseEvent) {
-    // 👇 COMPLETE CONNECTION ON MOUSE UP
+    this.isPanning = false;
+    this.isDragging = false;
+    this.isDraggingRect = false;
+    this.currentHandle = null;
+
     if (this.isConnecting) {
       if (this.potentialTarget && this.connectionStartRect) {
-        // Create permanent connector
         this.canvasService.createConnector(
           this.connectionStartRect.id,
           this.potentialTarget.id
         );
       }
 
-      // Reset connection state
       this.resetConnectionState();
-      this.canvasService.draw(); // Persist changes
+      this.canvasService.draw();
       return;
     }
 
-    // ... rest of panning/dragging cleanup ...
     this.isPanning = false;
     this.isDragging = false;
     this.currentHandle = null;
@@ -266,13 +297,14 @@ export class CanvasComponent implements AfterViewInit {
     this.potentialTarget = null;
   }
 
-  onMouseLeave() {
+  onMouseLeave(event: MouseEvent) {
     this.isPanning = false;
     this.isDragging = false;
+    this.isDraggingRect = false;
+    this.isConnecting = false;
     this.currentHandle = null;
     this.cursorStyle = 'default';
   }
-
   onWheel(e: WheelEvent) {
     e.preventDefault();
   }
@@ -383,19 +415,24 @@ export class CanvasComponent implements AfterViewInit {
     const world = this.getWorldPos(event);
     let cursor = 'default';
 
-    for (const rect of this.canvasService.rectangles) {
-      if (rect.selected) {
-        const handle = this.getHandleAt(world.x, world.y, rect);
-        if (handle) {
-          cursor = this.getResizeCursor(handle);
-          break;
-        }
+    const selectedRect = this.canvasService.rectangles.find(r => r.selected);
+    if (selectedRect) {
+      const handle = this.getHandleAt(world.x, world.y, selectedRect);
+      if (handle) {
+        cursor = this.getResizeCursor(handle);
+      }
+      else if (
+        world.x >= selectedRect.x &&
+        world.x <= selectedRect.x + selectedRect.width &&
+        world.y >= selectedRect.y &&
+        world.y <= selectedRect.y + selectedRect.height
+      ) {
+        cursor = 'move';
       }
     }
 
     this.cursorStyle = cursor;
   }
-
   private getHandleAt(x: number, y: number, rect: Rectangle): string | null {
     const hs = 8;
     const corners = [

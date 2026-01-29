@@ -27,12 +27,17 @@ export class CanvasService {
     this.ctx.save();
     this.ctx.translate(this.offsetX, this.offsetY);
 
-    // Draw connectors FIRST (so they appear behind rectangles)
     this.connectors.forEach(connector => {
-      this.drawConnector(connector);
+      const fromRect = this.rectangles.find(r => r.id === connector.fromRectId);
+      const toRect = this.rectangles.find(r => r.id === connector.toRectId);
+
+      if (fromRect && toRect) {
+        const fromPoint = this.getConnectionPoint(fromRect, toRect);
+        const toPoint = this.getConnectionPoint(toRect, fromRect, true);
+        this.drawConnector(fromPoint, toPoint);
+      }
     });
 
-    // Draw rectangles
     this.rectangles.forEach(rect =>
       this.rectManager.draw(rect, rect.selected)
     );
@@ -40,28 +45,57 @@ export class CanvasService {
     this.ctx.restore();
   }
 
-  private drawConnector(connector: Connector) {
-    const start = connector.fromPoint;
-    const end = connector.toPoint;
+  private getConnectionPoint(
+    rect: Rectangle,
+    targetRect: Rectangle,
+    isTarget = false
+  ): { x: number; y: number } {
+    const sides = {
+      left: { x: rect.x, y: rect.y + rect.height / 2 },
+      right: { x: rect.x + rect.width, y: rect.y + rect.height / 2 },
+      top: { x: rect.x + rect.width / 2, y: rect.y },
+      bottom: { x: rect.x + rect.width / 2, y: rect.y + rect.height }
+    };
 
-    // Calculate control points for curve
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const cx1 = start.x + dx * 0.3;
-    const cy1 = start.y;
-    const cx2 = start.x + dx * 0.7;
-    const cy2 = end.y;
+    const targetCenter = {
+      x: targetRect.x + targetRect.width / 2,
+      y: targetRect.y + targetRect.height / 2
+    };
+
+    let minDistance = Infinity;
+    let bestSide = sides.right;
+
+    for (const side of Object.values(sides)) {
+      const dx = side.x - targetCenter.x;
+      const dy = side.y - targetCenter.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        bestSide = side;
+      }
+    }
+
+    return bestSide;
+  }
+
+  private drawConnector(fromPoint: { x: number; y: number }, toPoint: { x: number; y: number }) {
+    const dx = toPoint.x - fromPoint.x;
+    const dy = toPoint.y - fromPoint.y;
+    const cx1 = fromPoint.x + dx * 0.3;
+    const cy1 = fromPoint.y;
+    const cx2 = fromPoint.x + dx * 0.7;
+    const cy2 = toPoint.y;
 
     this.ctx.beginPath();
-    this.ctx.moveTo(start.x, start.y);
-    this.ctx.bezierCurveTo(cx1, cy1, cx2, cy2, end.x, end.y);
+    this.ctx.moveTo(fromPoint.x, fromPoint.y);
+    this.ctx.bezierCurveTo(cx1, cy1, cx2, cy2, toPoint.x, toPoint.y);
 
     this.ctx.strokeStyle = '#666';
     this.ctx.lineWidth = 2;
     this.ctx.stroke();
 
-    // Draw arrowhead at end
-    this.drawArrowhead(end.x, end.y, cx2, cy2);
+    this.drawArrowhead(toPoint.x, toPoint.y, cx2, cy2);
   }
 
   private drawArrowhead(x: number, y: number, prevX: number, prevY: number) {
@@ -84,30 +118,21 @@ export class CanvasService {
     this.ctx.stroke();
   }
 
-  // 👇 NEW METHOD: Create connector between rectangles
   createConnector(fromRectId: string, toRectId: string) {
-    const fromRect = this.rectangles.find(r => r.id === fromRectId);
-    const toRect = this.rectangles.find(r => r.id === toRectId);
+    if (fromRectId === toRectId) return;
 
-    if (!fromRect || !toRect || fromRectId === toRectId) return;
+    const exists = this.connectors.some(
+      c => (c.fromRectId === fromRectId && c.toRectId === toRectId) ||
+        (c.fromRectId === toRectId && c.toRectId === fromRectId)
+    );
 
-    // Calculate connection points (center right → center left)
-    const fromPoint = {
-      x: fromRect.x + fromRect.width,
-      y: fromRect.y + fromRect.height / 2
-    };
-    const toPoint = {
-      x: toRect.x,
-      y: toRect.y + toRect.height / 2
-    };
-
-    this.connectors.push({
-      id: v4(),
-      fromRectId,
-      toRectId,
-      fromPoint,
-      toPoint
-    });
+    if (!exists) {
+      this.connectors.push({
+        id: v4(),
+        fromRectId,
+        toRectId
+      });
+    }
   }
 
   resizeRectangle(rect: Rectangle, handleType: string, worldX: number, worldY: number) {
@@ -115,26 +140,25 @@ export class CanvasService {
   }
 
   addDemoRectangles() {
-    this.rectangles.push(
-      {
-        id: v4(),
-        x: 100, y: 100, width: 120, height: 80,
-        color: '#4CAF50', selected: false, text: 'Start'
-      },
-      {
-        id: v4(),
-        x: 300, y: 200, width: 100, height: 100,
-        color: '#2196F3', selected: false, text: 'Process'
-      }
-    );
+    const rect1 = {
+      id: v4(),
+      x: 100, y: 100, width: 120, height: 80,
+      color: '#4CAF50', selected: false, text: 'Start'
+    };
+    const rect2 = {
+      id: v4(),
+      x: 300, y: 200, width: 100, height: 100,
+      color: '#2196F3', selected: false, text: 'Process'
+    };
 
-    // Add demo connector
-    this.createConnector(this.rectangles[0].id, this.rectangles[1].id);
+    this.rectangles.push(rect1, rect2);
+
+    this.createConnector(rect1.id, rect2.id);
   }
 
   spawnRectangle(x: number, y: number) {
     const newRect = this.rectManager.createRandom(x, y);
-    newRect.id = v4(); // 👈 Add ID
+    newRect.id = v4();
     this.rectangles.push(newRect);
   }
 
