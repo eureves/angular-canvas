@@ -1,3 +1,5 @@
+<img width="974" height="928" alt="image" src="https://github.com/user-attachments/assets/d2f0be78-06bc-4221-8992-638d2fad1340" />
+
 # Canvas
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.1.
