@@ -19,7 +19,7 @@ export class RectangleManager {
     const color = `hsl(${hue}, 0%, 95%)`;
     const texts = ['New', 'Item', 'Box', 'Text', 'Rect'];
     const text = texts[Math.floor(Math.random() * texts.length)];
-    return { x, y, width, height, color, selected: false, text };
+    return { id: '', x, y, width, height, color, selected: false, text };
   }
 
   draw(rect: Rectangle, isSelected: boolean) {

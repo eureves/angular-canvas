@@ -4,7 +4,7 @@
     class="canvas"
     (mousedown)="onMouseDown($event)"
     (mousemove)="onMouseMove($event)"
-    (mouseup)="onMouseUp()"
+    (mouseup)="onMouseUp($event)"
     (mouseleave)="onMouseLeave()"
     (wheel)="onWheel($event)"
     (dblclick)="onDoubleClick($event)"
@@ -19,6 +19,7 @@
   <div class="controls">
     <button (click)="canvasService.spawnMode = true" [class.active]="canvasService.spawnMode"><span
       class="material-symbols-outlined"> edit </span></button>
+    <button (click)="toggleConnectionMode()" [class.active]="connectionMode">Connect</button>
     <button (click)="canvasService.spawnMode = false" [class.active]="!canvasService.spawnMode">
       <span class="material-symbols-outlined"> gesture_select </span>
     </button>

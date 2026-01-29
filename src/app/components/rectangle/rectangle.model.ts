@@ -1,4 +1,5 @@
 export interface Rectangle {
+  id: string;
   x: number;
   y: number;
   width: number;
@@ -6,4 +7,12 @@ export interface Rectangle {
   color: string;
   selected: boolean;
   text: string;
+}
+
+export interface Connector {
+  id: string;
+  fromRectId: string;
+  toRectId: string;
+  fromPoint: { x: number; y: number };
+  toPoint: { x: number; y: number };
 }
